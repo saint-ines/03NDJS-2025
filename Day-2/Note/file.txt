@@ -1,0 +1,16 @@
+Il existe 3 façons principales de gérer l'asynchrone en Node.js :
+Callbacks (l’ancienne méthode): en cas de probleme on arrete tout et on passe a autre chose
+
+Promises : est un objet représentant la terminaison (ou l'échec) future d'une opération asynchrone. 
+Elle permet de chaîner des opérations asynchrones de manière plus lisible.
+
+async / await (la plus moderne et lisible)
+
+explication des fonctions:
+asynchrone = on ne bloque pas le programme pendant qu’on attend.
+
+callback = on donne une fonction à exécuter plus tard.
+
+promise = un objet qui représente une valeur disponible dans le futur.
+
+async/await = rend l’asynchrone aussi facile à lire que du code "normal".
