@@ -38,11 +38,9 @@ const $ = await cheerio.fromURL('https://www.footmercato.net/europe/ligue-des-ch
       let ligne = {};
       // Pour chaque cellule <td> de la ligne
       $(element).find('td').each((j, cell) => {
-        // Si un header est présent, utiliser son texte, sinon générer une clé automatique
         const key = headers[j] || `col${j + 1}`;
         ligne[key] = $(cell).text().trim();
       });
-      // On ajoute la ligne dans le tableau de résultats
       lignes.push(ligne);
     });
     
@@ -54,10 +52,9 @@ const $ = await cheerio.fromURL('https://www.footmercato.net/europe/ligue-des-ch
   }
 }
 
-// Exemple d'utilisation de la fonction
 (async () => {
   const url = 'https://www.footmercato.net/europe/ligue-des-champions-uefa/classement';
-  const tableSelector = 'table'; // Adapte le sélecteur au tableau que tu veux récupérer
+  const tableSelector = 'table';
 
   const tableauObjet = await recupererTableau(url, tableSelector);
   console.log("Tableau en objets :", tableauObjet);
