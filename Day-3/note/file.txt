@@ -1,0 +1,3 @@
+les controlleur sur node js 
+ au niveau de la fonctuon async register il faut ajouter une ligne de code pour verifier le contenu des elements passé en paramettre
+utiliser la documentation de mongoose pour faire des contrôleurs et les models.
