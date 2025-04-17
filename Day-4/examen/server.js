@@ -2,7 +2,7 @@
 const express = require('express');
 const bodyparser = require('body-parser');
 const authRoutes = require('./routes/aut');
-const { autenticate } = require('./middleware/auth');
+const { authenticate } = require('./middleware/auth');
 
 const app = express();
 
