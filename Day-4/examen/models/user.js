@@ -1,29 +1,36 @@
-const users = [];
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
-module.exports = {
-    create(user) {
-        users.push(user);
-        return user;
-    },
+const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Veuillez fournir un email valide']
+  },
+  password: {
+    type: String,
+    required: true,
+    minlength: 6
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false
+  }
+}, { timestamps: true });
 
-    findByEmail(email) {
-        return users.find(user => user.email === email);
-    },
 
-    findById(id) {
-        return users.find(user => user.id === id);
-    },
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
 
-    findAll() {
-        return [...users];
-    },
 
-    deleteById(id) {
-        const index = users.findIndex(user => user.id === id);
-        if (index !== -1) {
-            users.splice(index, 1);
-            return true;
-        }
-        return false;
-    }
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
 };
+
+module.exports = mongoose.model('User', userSchema);

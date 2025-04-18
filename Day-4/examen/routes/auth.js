@@ -1,18 +1,21 @@
 const express = require('express');
+const { check } = require('express-validator');
+const authController = require('../controllers/auth');
+const authMiddleware = require('../middleware/auth');
+
+
 const router = express.Router();
-const {
-    register,
-    login,
-    getMe,
-    deleteUser,    
-}   = require('../controllers/auth');
-const { authenticate } = require('../middleware/auth');
 
-router.post('/register', register);
-router.post('/login', login);
+router.post('/register', [
+  check('email', 'Veuillez inclure un email valide').isEmail(),
+  check('password', 'Le mot de passe doit contenir au moins 6 caractères').isLength({ min: 6 })
+], register);
 
-router.get('/me', authenticate, getMe);
-router.get('/users', authenticate, getMe);
-router.delete('/users/:id', authenticate, deleteUser);
+router.post('/login', [
+  check('email', 'Veuillez inclure un email valide').isEmail(),
+  check('password', 'Le mot de passe est requis').exists()
+], login);
 
-    module.exports = router;
+router.get('/me', authMiddleware, authController.getMe);
+
+module.exports = router;

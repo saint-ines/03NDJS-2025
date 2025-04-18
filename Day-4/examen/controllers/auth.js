@@ -1,100 +1,68 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { v4: uuidv4 } = require('uuid');
 const User = require('../models/user');
-const { JWT_SECRET } = process.env;
+const jwt = require('jsonwebtoken');
+const { validationResult } = require('express-validator');
 
-exports.register = async (req, res) => {
-    try {
-        const { email, password } = req.body;
+const register = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
-        if (!email || !password) {
-            return res.status(400).json({ message: 'Email and password are required' });
-        }
+  const { email, password } = req.body;
 
-        const existingUser = await User.findByEmail(email);
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const user = User.create({
-            id: uuidv4(),
-            email,
-            password: hashedPassword,
-        });
-
-        const { password: _, ...userWithoutPassword } = user;
-
-        res.status(201).json(userWithoutPassword);
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: error.message });
+  try {
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ message: 'Un utilisateur avec cet email existe déjà' });
     }
+
+    user = new User({ email, password });
+    await user.save();
+
+    const payload = { id: user.id };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    res.status(201).json({ 
+      user: { id: user.id, email: user.email },
+      token 
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Erreur du serveur');
+  }
 };
 
-exports.login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
+const login = async (req, res) => {
+  const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required' });
-    }
-    const user = await User.findByEmail(email);
+  try {
+    const user = await User.findOne({ email });
     if (!user) {
-        return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Identifiants invalides' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-        return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Identifiants invalides' });
     }
 
-    console.log(JWT_SECRET);
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+    const payload = { id: user.id };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+
     res.json({ token });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: 'error.message' });
-    }
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Erreur du serveur');
+  }
 };
 
-exports.getMe = async (req, res) => {
-    try {
-      const user = await User.findById(req.userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        const { password: _, ...userWithoutPassword } = user;
-        res.json(userWithoutPassword);
-    } catch (error) {
-        res.status(500).json({ message: 'error.message' });
-    }
+const getMe = async (req, res) => {
+  try {
+    res.json(req.user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Erreur du serveur');
+  }
 };
 
-exports.getUsers = async (req, res) => {
-    try {
-        const users = User.findAll().map(user => {
-            const { password, ...userWithoutPassword } = user;
-            return userWithoutPassword;
-        });
-        req.json(users);
-    } catch (error) {
-        res.status(500).json({ message: 'error.message' });
-    }
-};
-
-exports.deleteUser = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const user = User.findById(id);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        user.delete(id);
-        res.status(204).send();
-    } catch (error) {
-        res.status(500).json({ message: 'error.message' });
-    }
-};
+module.exports = { register, login, getMe };
