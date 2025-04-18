@@ -5,14 +5,14 @@ const {
     login,
     getMe,
     deleteUser,    
-}   = require('../controllers/authController');
+}   = require('../controllers/auth');
 const { authenticate } = require('../middleware/auth');
 
 router.post('/register', register);
 router.post('/login', login);
 
 router.get('/me', authenticate, getMe);
-router.get('/users', authenticate, getUsers);
+router.get('/users', authenticate, getMe);
 router.delete('/users/:id', authenticate, deleteUser);
 
     module.exports = router;

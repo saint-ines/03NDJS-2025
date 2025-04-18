@@ -19,7 +19,7 @@ exports.register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const user = user.create({
+        const user = User.create({
             id: uuidv4(),
             email,
             password: hashedPassword,
@@ -29,6 +29,7 @@ exports.register = async (req, res) => {
 
         res.status(201).json(userWithoutPassword);
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: 'error.message' });
     }
 };
@@ -53,6 +54,7 @@ exports.login = async (req, res) => {
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
     res.json({ token });
     } catch (error) {
+        console.log(error);
         res.status(500).json({ message: 'error.message' });
     }
 };
@@ -76,7 +78,7 @@ exports.getUsers = async (req, res) => {
             const { password, ...userWithoutPassword } = user;
             return userWithoutPassword;
         });
-        res.json(users);
+        req.json(users);
     } catch (error) {
         res.status(500).json({ message: 'error.message' });
     }
@@ -85,7 +87,7 @@ exports.getUsers = async (req, res) => {
 exports.deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const user = user.findById(id);
+        const user = User.findById(id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }

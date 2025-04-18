@@ -1,12 +1,11 @@
 //point d'entrée principal de l'application
 const express = require('express');
-const bodyparser = require('body-parser');
-const authRoutes = require('./routes/aut');
+const authRoutes = require('./routes/auth');
 const { authenticate } = require('./middleware/auth');
 
 const app = express();
 
-app.use(bodyparser.json());
+app.use(express.json());
 
 app.use('/api', authRoutes);
 
