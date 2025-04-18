@@ -1,5 +1,6 @@
 //point d'entrée principal de l'application
 const express = require('express');
+require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const { authenticate } = require('./middleware/auth');
 

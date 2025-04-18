@@ -30,7 +30,7 @@ exports.register = async (req, res) => {
         res.status(201).json(userWithoutPassword);
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: 'error.message' });
+        res.status(500).json({ message: error.message });
     }
 };
 
@@ -41,7 +41,7 @@ exports.login = async (req, res) => {
     if (!email || !password) {
         return res.status(400).json({ message: 'Email and password are required' });
     }
-    const user = User.findByEmail(email);
+    const user = await User.findByEmail(email);
     if (!user) {
         return res.status(401).json({ message: 'Invalid email or password' });
     }
@@ -51,6 +51,7 @@ exports.login = async (req, res) => {
         return res.status(401).json({ message: 'Invalid email or password' });
     }
 
+    console.log(JWT_SECRET);
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
     res.json({ token });
     } catch (error) {
